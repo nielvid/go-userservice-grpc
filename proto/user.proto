@@ -5,7 +5,7 @@ package user_service;
 option go_package="/proto";
 
 service UserService{
-    rpc CreateUser(UserParams)returns(User){} // unary
+    rpc CreateUser(UserParams)returns(AuthUser){} // unary
     rpc FindUsers(NoParams)returns (Users){}
 
     rpc FetchUsers(NoParams)returns (stream Users){} //server streaming
@@ -29,13 +29,21 @@ message Params{
 }
 
 
+message AuthUser{
+    string  id      =    1;
+    string firstname       = 2;
+    string  lastname    = 3;
+    optional string  phoneNumber =   4;
+    string  email       =   5;
+    string  accessToken    = 6;
+}
+
 message User{
     string  id      =    1;
     string firstname       = 2;
     string  lastname    = 3;
-   optional string  phoneNumber =   4;
+    optional string  phoneNumber =   4;
     string  email       =   5;
-    string  password    = 6;
 }
 
 message Users{

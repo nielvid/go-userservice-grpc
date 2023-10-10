@@ -18,7 +18,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type UserServiceClient interface {
-	CreateUser(ctx context.Context, in *UserParams, opts ...grpc.CallOption) (*User, error)
+	CreateUser(ctx context.Context, in *UserParams, opts ...grpc.CallOption) (*AuthUser, error)
 	FindUsers(ctx context.Context, in *NoParams, opts ...grpc.CallOption) (*Users, error)
 	FetchUsers(ctx context.Context, in *NoParams, opts ...grpc.CallOption) (UserService_FetchUsersClient, error)
 	VerifyUsers(ctx context.Context, opts ...grpc.CallOption) (UserService_VerifyUsersClient, error)
@@ -34,8 +34,8 @@ func NewUserServiceClient(cc grpc.ClientConnInterface) UserServiceClient {
 	return &userServiceClient{cc}
 }
 
-func (c *userServiceClient) CreateUser(ctx context.Context, in *UserParams, opts ...grpc.CallOption) (*User, error) {
-	out := new(User)
+func (c *userServiceClient) CreateUser(ctx context.Context, in *UserParams, opts ...grpc.CallOption) (*AuthUser, error) {
+	out := new(AuthUser)
 	err := c.cc.Invoke(ctx, "/user_service.UserService/CreateUser", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -140,7 +140,7 @@ func (c *userServiceClient) DeleteUser(ctx context.Context, in *UserId, opts ...
 // All implementations must embed UnimplementedUserServiceServer
 // for forward compatibility
 type UserServiceServer interface {
-	CreateUser(context.Context, *UserParams) (*User, error)
+	CreateUser(context.Context, *UserParams) (*AuthUser, error)
 	FindUsers(context.Context, *NoParams) (*Users, error)
 	FetchUsers(*NoParams, UserService_FetchUsersServer) error
 	VerifyUsers(UserService_VerifyUsersServer) error
@@ -153,7 +153,7 @@ type UserServiceServer interface {
 type UnimplementedUserServiceServer struct {
 }
 
-func (UnimplementedUserServiceServer) CreateUser(context.Context, *UserParams) (*User, error) {
+func (UnimplementedUserServiceServer) CreateUser(context.Context, *UserParams) (*AuthUser, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateUser not implemented")
 }
 func (UnimplementedUserServiceServer) FindUsers(context.Context, *NoParams) (*Users, error) {

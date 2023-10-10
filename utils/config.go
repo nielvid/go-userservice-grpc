@@ -7,13 +7,13 @@ import (
 )
 
 type EnvConfigs struct {
-	MONGOURI, JWT_SECRET string
+	MONGOURI, TOKEN_SECRET string
 	EncryptionKey        string
 	InitVector           string
 	PORT                 string
 }
 
-var uri, jwtSecret, port string
+var uri, secret, port string
 var ok bool
 
 //  encryptionKey, initVector string
@@ -25,9 +25,9 @@ func ValidateEnvVars() {
 	if !ok {
 		panic("MONGOURI  is required for the server to run")
 	}
-	jwtSecret, ok = os.LookupEnv("JWT_SECRET")
+	secret, ok = os.LookupEnv("TOKEN_SECRET")
 	if !ok {
-		panic("JWT_SECRET is required for the server to run")
+		panic("TOKEN_SECRET is required for the server to run")
 	}
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -47,6 +47,6 @@ func ValidateEnvVars() {
 
 var EnvVariable = EnvConfigs{
 	MONGOURI:   uri,
-	JWT_SECRET: jwtSecret,
+	TOKEN_SECRET: secret,
 	PORT:       port,
 }
