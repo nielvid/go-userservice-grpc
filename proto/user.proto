@@ -1,0 +1,47 @@
+syntax="proto3";
+
+package user_service;
+
+option go_package="/proto";
+
+service UserService{
+    rpc CreateUser(UserParams)returns(User){} // unary
+    rpc FindUsers(NoParams)returns (Users){}
+
+    rpc FetchUsers(NoParams)returns (stream Users){} //server streaming
+    rpc VerifyUsers(stream Params)returns (Users){} //client streaming
+    rpc FindUser (UserId) returns (User){}
+    rpc DeleteUser (UserId) returns (User){}
+}
+
+message UserParams{
+    string firstname       = 1;
+    string  lastname    = 2;
+   optional string  phoneNumber =   3;
+    string  email       =   4;
+    string  password    = 5;
+}
+
+message NoParams{}
+
+message Params{
+    string id = 1;
+}
+
+
+message User{
+    string  id      =    1;
+    string firstname       = 2;
+    string  lastname    = 3;
+   optional string  phoneNumber =   4;
+    string  email       =   5;
+    string  password    = 6;
+}
+
+message Users{
+   repeated User users = 1;
+}
+
+message UserId{
+   string id = 1;
+}
