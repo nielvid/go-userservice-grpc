@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"log"
+	"time"
 
 	pb "github.com/nielvid/go-userservice-grpc/proto"
 )
@@ -18,27 +19,33 @@ func Chat(client pb.UserServiceClient) {
 	}
 	wg := make(chan struct{})
 	go func() {
-		for {
-			res, err := stream.Recv()
+	for {
+		res, err := stream.Recv()
 
-			if err == io.EOF {
-				break
-			}
-
-			if err != nil {
-				log.Fatalf("message not received: %v", err)
-			}
-			log.Fatalf("message received: %v", res.Message)
-			req := &pb.ChatMessage{Message: "How are you" }
-			if err := stream.Send(req); err != nil {
-			log.Fatalf("request not sent: %v", err)
+		if err == io.EOF {
+			break
 		}
 
+		if err != nil {
+			log.Fatalf("message not received: %v", err)
 		}
-		<- wg
-		stream.CloseSend()
-
+		log.Fatalf("message received: %v", res.Message)
+	}
 		close(wg)
 	}()
+	messages := []string{"Hi", "Hello", "How are you"}
+	for _, v := range messages {
+		req := &pb.ChatMessage{Message: v}
+		if err := stream.Send(req); err != nil {
+			log.Fatalf("request not sent: %v", err)
+		}
+		time.Sleep(time.Second)
+	}
+
+		
+	stream.CloseSend()
+	<- wg
+log.Println("bidirectional streaming ended")
+	
 
 }

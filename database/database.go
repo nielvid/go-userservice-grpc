@@ -41,10 +41,14 @@ func Connection() *DB {
 	if err != nil {
 		panic(err)
 	}
-	err = client.Ping(ctx, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
+
+	  // Check the connection.
+    err = client.Ping(ctx, nil)
+    if err != nil {
+        log.Fatal(err)
+    }else{
+      fmt.Println("Connected to mongoDB!!!")
+   }
 	// 	col := client.Database(DBName).Collection("users")
 	//create index on email and make it unique
 	// 	col.Indexes().CreateOne(ctx, mongo.IndexModel{Keys: bson.D{{ "email", 1}},
@@ -91,3 +95,44 @@ func (db *DB) FindUser(id string) (models.User, error) {
 	}
 	return user, nil
 }
+
+
+func (db *DB) UpdateUser(id string, data interface{}) (string, error) {
+
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		fmt.Println(err)
+		log.Fatal(err)
+	}
+
+	filter := bson.D{{"_id", objID}} 
+	col := db.client.Database(DBName).Collection(collection)
+	result, err := col.UpdateOne(context.TODO(), filter, bson.M{
+		"$set": bson.M{
+            "body":       "Some updated text",
+            "updated_at": time.Now(),
+            },
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	return result.UpsertedID.(primitive.ObjectID).Hex(), nil
+}
+
+func (db *DB)DeleteUser(id string) {
+
+    // Delete one document.
+    objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		fmt.Println(err)
+		log.Fatal(err)
+	}
+		col := db.client.Database(DBName).Collection(collection)
+    result, err := col.DeleteOne(context.TODO(), bson.M{"_id": objID})
+    if err != nil {
+        fmt.Println(err)
+        return
+    }
+    fmt.Println(result.DeletedCount) // output: 1
+}
+

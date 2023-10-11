@@ -71,6 +71,21 @@ func (s *UserServer) FindUsers(ctx context.Context, req *pb.NoParams) (*pb.Users
 
 }
 
+func (s *UserServer) FindUser(ctx context.Context, req *pb.UserId) (*pb.User, error) {
+	user, err := db.FindUser(req.Id)
+	if err != nil {
+		log.Fatalf("cannot create token:%v", err)
+	}
+
+		return  &pb.User{
+			Id:         user.ID.Hex(),
+			Firstname:   user.FirstName,
+			PhoneNumber: &user.PhoneNumber,
+			Email:      user.Email,
+		}, nil
+
+}
+
 // server streaming i.e server sending strems of messages back to the client
 func (s *UserServer) FetchUsers(req *pb.NoParams, stream pb.UserService_FetchUsersServer) error {
 	cursor, err := db.FindUsers()
