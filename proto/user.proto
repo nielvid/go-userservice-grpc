@@ -8,10 +8,11 @@ service UserService{
     rpc CreateUser(UserParams)returns(AuthUser){} // unary
     rpc FindUsers(NoParams)returns (Users){}
 
-    rpc FetchUsers(NoParams)returns (stream Users){} //server streaming
-    rpc VerifyUsers(stream Params)returns (Users){} //client streaming
+    rpc FetchUsers(NoParams)returns (stream User){} //server streaming
+    rpc VerifyUsers(stream Params)returns (VerificationResponse){} //client streaming
     rpc FindUser (UserId) returns (User){}
     rpc DeleteUser (UserId) returns (User){}
+    rpc Chat(stream ChatMessage)returns (stream ChatMessage){} //bidirectional streaming
 }
 
 message UserParams{
@@ -27,6 +28,16 @@ message NoParams{}
 message Params{
     string id = 1;
 }
+
+
+message VerificationResponse{
+    string  message = 1;
+}
+
+message ChatMessage{
+    string  message = 1;
+}
+
 
 
 message AuthUser{

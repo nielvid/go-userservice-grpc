@@ -24,6 +24,7 @@ type UserServiceClient interface {
 	VerifyUsers(ctx context.Context, opts ...grpc.CallOption) (UserService_VerifyUsersClient, error)
 	FindUser(ctx context.Context, in *UserId, opts ...grpc.CallOption) (*User, error)
 	DeleteUser(ctx context.Context, in *UserId, opts ...grpc.CallOption) (*User, error)
+	Chat(ctx context.Context, opts ...grpc.CallOption) (UserService_ChatClient, error)
 }
 
 type userServiceClient struct {
@@ -68,7 +69,7 @@ func (c *userServiceClient) FetchUsers(ctx context.Context, in *NoParams, opts .
 }
 
 type UserService_FetchUsersClient interface {
-	Recv() (*Users, error)
+	Recv() (*User, error)
 	grpc.ClientStream
 }
 
@@ -76,8 +77,8 @@ type userServiceFetchUsersClient struct {
 	grpc.ClientStream
 }
 
-func (x *userServiceFetchUsersClient) Recv() (*Users, error) {
-	m := new(Users)
+func (x *userServiceFetchUsersClient) Recv() (*User, error) {
+	m := new(User)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -95,7 +96,7 @@ func (c *userServiceClient) VerifyUsers(ctx context.Context, opts ...grpc.CallOp
 
 type UserService_VerifyUsersClient interface {
 	Send(*Params) error
-	CloseAndRecv() (*Users, error)
+	CloseAndRecv() (*VerificationResponse, error)
 	grpc.ClientStream
 }
 
@@ -107,11 +108,11 @@ func (x *userServiceVerifyUsersClient) Send(m *Params) error {
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *userServiceVerifyUsersClient) CloseAndRecv() (*Users, error) {
+func (x *userServiceVerifyUsersClient) CloseAndRecv() (*VerificationResponse, error) {
 	if err := x.ClientStream.CloseSend(); err != nil {
 		return nil, err
 	}
-	m := new(Users)
+	m := new(VerificationResponse)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -136,6 +137,37 @@ func (c *userServiceClient) DeleteUser(ctx context.Context, in *UserId, opts ...
 	return out, nil
 }
 
+func (c *userServiceClient) Chat(ctx context.Context, opts ...grpc.CallOption) (UserService_ChatClient, error) {
+	stream, err := c.cc.NewStream(ctx, &UserService_ServiceDesc.Streams[2], "/user_service.UserService/Chat", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &userServiceChatClient{stream}
+	return x, nil
+}
+
+type UserService_ChatClient interface {
+	Send(*ChatMessage) error
+	Recv() (*ChatMessage, error)
+	grpc.ClientStream
+}
+
+type userServiceChatClient struct {
+	grpc.ClientStream
+}
+
+func (x *userServiceChatClient) Send(m *ChatMessage) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *userServiceChatClient) Recv() (*ChatMessage, error) {
+	m := new(ChatMessage)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // UserServiceServer is the server API for UserService service.
 // All implementations must embed UnimplementedUserServiceServer
 // for forward compatibility
@@ -146,6 +178,7 @@ type UserServiceServer interface {
 	VerifyUsers(UserService_VerifyUsersServer) error
 	FindUser(context.Context, *UserId) (*User, error)
 	DeleteUser(context.Context, *UserId) (*User, error)
+	Chat(UserService_ChatServer) error
 	mustEmbedUnimplementedUserServiceServer()
 }
 
@@ -170,6 +203,9 @@ func (UnimplementedUserServiceServer) FindUser(context.Context, *UserId) (*User,
 }
 func (UnimplementedUserServiceServer) DeleteUser(context.Context, *UserId) (*User, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteUser not implemented")
+}
+func (UnimplementedUserServiceServer) Chat(UserService_ChatServer) error {
+	return status.Errorf(codes.Unimplemented, "method Chat not implemented")
 }
 func (UnimplementedUserServiceServer) mustEmbedUnimplementedUserServiceServer() {}
 
@@ -229,7 +265,7 @@ func _UserService_FetchUsers_Handler(srv interface{}, stream grpc.ServerStream) 
 }
 
 type UserService_FetchUsersServer interface {
-	Send(*Users) error
+	Send(*User) error
 	grpc.ServerStream
 }
 
@@ -237,7 +273,7 @@ type userServiceFetchUsersServer struct {
 	grpc.ServerStream
 }
 
-func (x *userServiceFetchUsersServer) Send(m *Users) error {
+func (x *userServiceFetchUsersServer) Send(m *User) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -246,7 +282,7 @@ func _UserService_VerifyUsers_Handler(srv interface{}, stream grpc.ServerStream)
 }
 
 type UserService_VerifyUsersServer interface {
-	SendAndClose(*Users) error
+	SendAndClose(*VerificationResponse) error
 	Recv() (*Params, error)
 	grpc.ServerStream
 }
@@ -255,7 +291,7 @@ type userServiceVerifyUsersServer struct {
 	grpc.ServerStream
 }
 
-func (x *userServiceVerifyUsersServer) SendAndClose(m *Users) error {
+func (x *userServiceVerifyUsersServer) SendAndClose(m *VerificationResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -303,6 +339,32 @@ func _UserService_DeleteUser_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserService_Chat_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(UserServiceServer).Chat(&userServiceChatServer{stream})
+}
+
+type UserService_ChatServer interface {
+	Send(*ChatMessage) error
+	Recv() (*ChatMessage, error)
+	grpc.ServerStream
+}
+
+type userServiceChatServer struct {
+	grpc.ServerStream
+}
+
+func (x *userServiceChatServer) Send(m *ChatMessage) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *userServiceChatServer) Recv() (*ChatMessage, error) {
+	m := new(ChatMessage)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // UserService_ServiceDesc is the grpc.ServiceDesc for UserService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -336,6 +398,12 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "VerifyUsers",
 			Handler:       _UserService_VerifyUsers_Handler,
+			ClientStreams: true,
+		},
+		{
+			StreamName:    "Chat",
+			Handler:       _UserService_Chat_Handler,
+			ServerStreams: true,
 			ClientStreams: true,
 		},
 	},
