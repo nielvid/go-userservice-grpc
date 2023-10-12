@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	serverUrl = "localhost:3000"
+	serverUrl = "localhost:5000"
 	connError  = "error connecting to server"
 )
 
@@ -25,7 +25,8 @@ func main() {
 
 	client := pb.NewUserServiceClient(conn)
 
+	mtype.CreateUser(client)
 	// mtype.FetchUsers(client)
-	mtype.Chat(client)
+	// mtype.Chat(client)
 
 }
