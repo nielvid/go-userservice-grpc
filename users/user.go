@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"time"
+	"net/mail"
 
 	"github.com/nielvid/go-userservice-grpc/auth"
 	"github.com/nielvid/go-userservice-grpc/database"
@@ -12,6 +13,8 @@ import (
 	pb "github.com/nielvid/go-userservice-grpc/proto"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
+
+
 
 type UserServer struct {
 	pb.UserServiceServer
@@ -23,6 +26,10 @@ var (
 )
 
 func (s *UserServer) CreateUser(ctx context.Context, req *pb.UserParams) (*pb.AuthUser, error) {
+	 _, err := mail.ParseAddress(req.Email)
+	 if err != nil {
+		log.Fatalf("invalid email address :%v", err)
+	}
 	user := &models.User{ID: primitive.NewObjectID(), FirstName: req.Firstname, LastName: req.Lastname, PhoneNumber: *req.PhoneNumber, Email: req.Email, Password: req.Password}
 
 	result, err := db.CreateUser(user)
