@@ -9,3 +9,9 @@ genpb:
 
 genpb2:
 	protoc --go_out=. --go_opt=module=github.com/nielvid/go-userservice-grpc --go-grpc_out=. --go-grpc_opt=module=github.com/nielvid/go-userservice-grpc proto/greet.proto
+
+grpcurl:
+	grpcurl -plaintext -d '{"name": "Paul", "message": "how are you"}' localhost:8090 chat.ChatService.Greet
+
+grpcui:
+	grpui -plaintext localhost:8090
